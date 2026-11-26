@@ -1,0 +1,173 @@
+# Perfiles de gestpad.  Se copia a ~/.config/gestpad/perfiles.toml al instalar:
+# edita esa copia y pulsa «Recargar perfiles» en la app (o `gestpad recargar`).
+#
+# Cada perfil dice qué hace cada gesto ([perfil.gestos]) y qué mueve el cursor
+# ([perfil.ejes]). Solo se enciende el detector que el perfil necesita: un perfil
+# de solo cara no busca manos, y al revés (menos CPU y menos falsos positivos).
+#
+# ---- Gestos de la MANO (izquierda del =) -------------------------------------
+#   Poses:   PALMA PUNO SENALAR PAZ TRES ROCK LLAMAME PULGAR_ARRIBA PULGAR_ABAJO
+#   Pinzas:  PINZA_INDICE PINZA_CORAZON PINZA_ANULAR PINZA_MENIQUE   (pulgar + ese dedo)
+#   Eventos: DESLIZAR_IZQ DESLIZAR_DER DESLIZAR_ARRIBA DESLIZAR_ABAJO (pasar la mano rápido)
+# ---- Gestos de la CARA -------------------------------------------------------
+#   GUINO_IZQ GUINO_DER OJOS_CERRADOS BOCA_ABIERTA SONRISA CEJAS_ARRIBA BESO MEJILLAS
+#   CABEZA_IZQ CABEZA_DER CABEZA_ARRIBA CABEZA_ABAJO LADEAR_IZQ LADEAR_DER
+#   Eventos: ASENTIR (sí con la cabeza) NEGAR (no con la cabeza)
+#   Izquierda/derecha son SIEMPRE las tuyas (la imagen va en espejo).
+#   `gestpad gestos` los lista todos con su explicación.
+#
+# ---- Destinos (derecha del =; una lista pulsa varios a la vez) ---------------
+#   key:<TECLA>        cualquier KEY_ de Linux sin el prefijo: key:SPACE key:W key:F5 key:PLAYPAUSE
+#   key:SUPER+TAB      combinación (los modificadores van primero). SUPER CTRL SHIFT ALT valen.
+#   mouse:LEFT mouse:RIGHT mouse:MIDDLE · mouse:WHEEL_UP/DOWN/LEFT/RIGHT (una muesca)
+#   mod:PRECISION      mientras dura, el cursor va lento para afinar
+#   mod:SCROLL         mientras dura, mover la mano/cabeza arriba-abajo hace scroll (y no mueve el cursor)
+#   mod:CONGELAR       mientras dura, el cursor no se mueve (para recolocar la mano en modo relativo)
+#   accion:pausa · accion:siguiente_perfil · accion:perfil_anterior · accion:recentrar · accion:perfil=NOMBRE
+#   exec:<orden>       ejecuta una orden de shell al empezar el gesto
+#   rep:<destino>      lo repite mientras se mantenga el gesto (ej. rep:key:VOLUMEUP)
+#   Los gestos «estado» (poses, pinzas, boca…) mantienen pulsado el destino mientras duran;
+#   los eventos (DESLIZAR_*, ASENTIR, NEGAR) dan un toque.
+#
+# ---- Ejes ([perfil.ejes]) ----------------------------------------------------
+#   fuentes : mano (centro de la palma; con punto="indice", la punta del índice) · cabeza
+#   destinos: raton · scroll · teclas:ARRIBA,ABAJO,IZQ,DER (ej. teclas:W,S,A,D)
+#   Cómo mueve el cursor: opción modo_raton = absoluto · relativo · joystick
+#
+# ---- Pausa -------------------------------------------------------------------
+#   Mantener el gesto de «pausa» (por defecto PAZ) pausa_s segundos pausa o reanuda.
+#   También: botón de la app, `gestpad alternar` (para un atajo de teclado).
+#   Si se pierde la mano o la cara, todo lo pulsado se suelta solo.
+
+[general]
+perfil_inicial = "raton_mano"
+salida = "uinput"        # uinput (Wayland/X11) · autopy · pyautogui (solo X11/XWayland) · nula
+camara = 0               # /dev/video0
+ancho = 640
+alto = 480
+fps = 30
+espejo = true
+monitor = ""             # "" = el monitor con el foco (modo absoluto)
+
+# Valores por defecto de todas las opciones; cada perfil puede cambiarlos en [perfil.opciones].
+[opciones]
+suavizado = 1.2          # Hz: más bajo = cursor más quieto pero con más retardo
+pinza_cerrar = 0.30      # distancia pulgar-dedo / largo de la palma para «pellizcar»
+pinza_abrir = 0.45
+umbral_cabeza = 12.0     # grados para CABEZA_* y LADEAR_*
+pausa = "PAZ"
+pausa_s = 1.5
+# La mano no hace nada hasta que enseñas esta pose (así una mano en el ratón o en el
+# teclado no mueve el cursor); al sacarla de la cámara 0,8 s se suelta. "" = siempre activa.
+enganche = "PALMA"
+
+# ───────────────────────────────────────────────────────────────────────────
+[[perfil]]
+nombre = "raton_mano"
+descripcion = "Ratón con la mano: la palma mueve el cursor, pellizcos = clics, puño = scroll"
+[perfil.ejes]
+mano = "raton"
+[perfil.gestos]
+PINZA_INDICE = "mouse:LEFT"        # mantener la pinza = arrastrar
+PINZA_CORAZON = "mouse:RIGHT"
+PINZA_ANULAR = "mouse:MIDDLE"
+PUNO = "mod:SCROLL"                # cierra el puño y sube/baja la mano
+PINZA_MENIQUE = "mod:PRECISION"
+[perfil.opciones]
+modo_raton = "absoluto"
+
+# ───────────────────────────────────────────────────────────────────────────
+[[perfil]]
+nombre = "raton_cara"
+descripcion = "Ratón con la cabeza (manos libres): guiños = clics, boca abierta = scroll"
+[perfil.ejes]
+cabeza = "raton"
+[perfil.gestos]
+GUINO_IZQ = "mouse:LEFT"
+GUINO_DER = "mouse:RIGHT"
+BOCA_ABIERTA = "mod:SCROLL"        # abre la boca y mira arriba/abajo
+SONRISA = "mod:PRECISION"
+BESO = "accion:recentrar"
+[perfil.opciones]
+modo_raton = "relativo"            # el cursor sigue el movimiento de la cabeza, como un ratón
+ganancia = 2.0
+pausa = "CEJAS_ARRIBA"             # cejas arriba 1,5 s = pausa
+pausa_s = 1.5
+
+# ───────────────────────────────────────────────────────────────────────────
+[[perfil]]
+nombre = "mixto"
+descripcion = "La mano mueve el cursor y la cara hace los clics (guiños) y el scroll (boca)"
+[perfil.ejes]
+mano = "raton"
+[perfil.gestos]
+GUINO_IZQ = "mouse:LEFT"
+GUINO_DER = "mouse:RIGHT"
+BOCA_ABIERTA = "mod:SCROLL"
+PUNO = "mod:CONGELAR"
+[perfil.opciones]
+modo_raton = "absoluto"
+
+# ───────────────────────────────────────────────────────────────────────────
+[[perfil]]
+nombre = "presentacion"
+descripcion = "Diapositivas: desliza la mano para pasar, señala para mover el puntero"
+[perfil.ejes]
+mano = "raton"
+[perfil.gestos]
+DESLIZAR_DER = "key:RIGHT"         # siguiente
+DESLIZAR_IZQ = "key:LEFT"          # anterior
+PULGAR_ARRIBA = "key:F5"           # empezar la presentación
+PULGAR_ABAJO = "key:ESC"
+PUNO = "key:B"                     # pantalla en negro (LibreOffice/PowerPoint)
+[perfil.opciones]
+punto = "indice"
+raton_con = "SENALAR"              # el cursor solo se mueve mientras señalas
+deslizar_con = "PALMA"             # solo deslizar con la mano abierta
+
+# ───────────────────────────────────────────────────────────────────────────
+[[perfil]]
+nombre = "multimedia"
+descripcion = "Música y vídeo: puño = play/pausa, deslizar = pista, pulgar = volumen"
+[perfil.gestos]
+PUNO = "key:PLAYPAUSE"
+DESLIZAR_DER = "key:NEXTSONG"
+DESLIZAR_IZQ = "key:PREVIOUSSONG"
+PULGAR_ARRIBA = "rep:key:VOLUMEUP"
+PULGAR_ABAJO = "rep:key:VOLUMEDOWN"
+ROCK = "key:MUTE"
+[perfil.opciones]
+deslizar_con = "PALMA"
+repetir_s = 0.15
+
+# ───────────────────────────────────────────────────────────────────────────
+[[perfil]]
+nombre = "escritorio"
+descripcion = "Hyprland con la mano: deslizar = escritorio, arriba = ventanas, pulgar = lanzador"
+[perfil.gestos]
+DESLIZAR_DER = "key:SUPER+U"       # escritorio siguiente
+DESLIZAR_IZQ = "key:SUPER+I"       # escritorio anterior
+DESLIZAR_ARRIBA = "key:SUPER+TAB"  # vista de ventanas (rofi)
+PULGAR_ARRIBA = "key:SUPER+SPACE"  # lanzador de apps (rofi)
+PULGAR_ABAJO = "key:ESC"
+[perfil.opciones]
+deslizar_con = "PALMA"
+
+# ───────────────────────────────────────────────────────────────────────────
+[[perfil]]
+nombre = "juego_cabeza"
+descripcion = "Juegos con la cara: la cabeza son las flechas, boca = saltar (C), cejas = dash (X)"
+[perfil.gestos]
+CABEZA_IZQ = "key:LEFT"
+CABEZA_DER = "key:RIGHT"
+CABEZA_ARRIBA = "key:UP"
+CABEZA_ABAJO = "key:DOWN"
+BOCA_ABIERTA = "key:C"             # Celeste: C salta, X dash, Z agarra
+CEJAS_ARRIBA = "key:X"
+SONRISA = "key:Z"
+[perfil.opciones]
+umbral_cabeza = 10.0
+entrar_s = 0.06                    # más rápido: en un juego importa la latencia
+salir_s = 0.05
+pausa = "OJOS_CERRADOS"            # ojos cerrados 1,5 s = pausa
+pausa_s = 1.5

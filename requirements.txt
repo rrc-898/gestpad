@@ -1,0 +1,7 @@
+# gestpad — dependencias de Python (las instala ./instalar.sh en .venv)
+# GTK 4 / libadwaita (PyGObject) vienen del sistema: el venv usa --system-site-packages.
+mediapipe>=1.1          # HandLandmarker y FaceLandmarker (API Tasks)
+opencv-contrib-python   # cv2: cámara y dibujo (mediapipe ya lo pide)
+numpy
+autopy                  # salida opcional (X11/XWayland)
+pyautogui               # salida opcional (X11/XWayland, Windows, macOS)
